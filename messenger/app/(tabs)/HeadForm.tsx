@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, SafeAreaView, Text, View, TouchableOpacity, Alert } from 'react-native';
 
+
 export default function Head() {
   const PressButtonSwitch = () => {
     Alert.alert("Text Pressed", "You pressed the text!");
@@ -42,6 +43,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 25,
     color: 'black',
+    fontFamily: 'SemiBold'
   },
   buttonContainer: {
     padding: 0,
