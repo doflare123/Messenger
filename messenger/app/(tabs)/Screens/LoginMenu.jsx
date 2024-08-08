@@ -1,30 +1,51 @@
 import React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image, StyleSheet, Platform, SafeAreaView, Text, TextInput, TouchableOpacity,} from 'react-native';
+import { Formik, useFormik } from 'formik'
+import {generateSalt, hashPassword} from "../../../serverConfg/crypt";
 
 
-export default function LoginScreen({navigation}) {
-  const [email, onChangeEmail] = React.useState('')
-  const [password, onChangePassword] = React.useState('')
-
-  const PressButton = ({}) =>{
-    return 
-  }
-
-  const PressReg = () =>{
+export default function LoginScreen({ navigation }) {
+  const PressReg = () => {
     navigation.navigate('Registration');
-  }
+  };
+
 
   return (
     <SafeAreaView style={styles.container}>
-        <TextInput style={styles.inputTextInput} onChangeText={onChangeEmail} value={email} placeholder="Введите почту" keyboardType="email-address"></TextInput>
-        <TextInput style={styles.inputTextInput} onChangeText={onChangePassword} value={password} secureTextEntry={true} placeholder="Введите пароль"></TextInput>
-        <TouchableOpacity style={styles.textReg} onPress={PressReg}>
-          <Text style={styles.touchableText}>Еще нет аккаунта?</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={PressButton}>
-          <Text>Войти</Text>
-        </TouchableOpacity>
+      <Formik
+        initialValues={{ email: '', password: '' }}
+        onSubmit={ async values => {
+          
+        }}
+      >
+        {({ handleChange, handleBlur, handleSubmit, values }) => (
+          <>
+            <TextInput
+              style={styles.inputTextInput}
+              value={values.email}
+              placeholder="Введите почту"
+              keyboardType="email-address"
+              onChangeText={handleChange('email')}
+              onBlur={handleBlur('email')}
+            />
+            <TextInput
+              style={styles.inputTextInput}
+              value={values.password}
+              secureTextEntry={true}
+              placeholder="Введите пароль"
+              onChangeText={handleChange('password')}
+              onBlur={handleBlur('password')}
+            />
+            <TouchableOpacity style={styles.textReg} onPress={PressReg}>
+              <Text style={styles.touchableText}>Еще нет аккаунта?</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+              <Text>Войти</Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </Formik>
     </SafeAreaView>
   );
 }
@@ -35,7 +56,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingTop: 200,
     paddingLeft: 75,
-    paddingRight: 75
+    paddingRight: 75,
   },
   inputTextInput: {
     height: 40,

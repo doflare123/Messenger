@@ -1,6 +1,5 @@
-import {StyleSheet} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import Head from '../HeadForm';
-import { View } from 'react-native-reanimated/lib/typescript/Animated';
 
 export default function RegisterScreen() {
   return (
