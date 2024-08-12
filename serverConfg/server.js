@@ -1,23 +1,40 @@
-import { SendToDB, writeClient, writeUri} from './dbConnection.js';
 import express from 'express';
-import mongoose from 'mongoose';
+import http from 'http';
+import { WebSocketServer } from 'ws';
 import dotenv from 'dotenv';
-dotenv.config({ path: "./Config.env"});
 
-const PORT = 3000;
+dotenv.config({ path: "./Config.env" });
+
 const app = express();
+const PORT = 3000;
 
-StartServer();
-function StartServer() {
-  console.log(123)
-  app.listen(PORT, (err) => {
+// Создаем HTTP сервер
+const server = http.createServer(app);
+
+// Создаем WebSocket сервер
+const wss = new WebSocketServer({ server });
+
+wss.on('connection', (ws) => {
+    console.log('Новое WebSocket-соединение установлено');
+
+    ws.on('message', (message) => {
+        console.log('Получено сообщение:', message);
+    });
+
+    ws.on('close', (code, reason) => {
+        console.log(`Соединение закрыто. Код: ${code}, Причина: ${reason}`);
+    });
+
+    ws.send('Привет от сервера!');
+});
+
+// Запуск сервера
+server.listen(PORT, (err) => {
     if (err) {
-      console.log(err);
+        console.error('Ошибка при запуске сервера:', err);
     } else {
-      console.log(`Listening on port ${PORT}`);
-      SendToDB("fff", 123, 123)
+        console.log(`Сервер запущен на http://192.168.88.106:${PORT}`);
     }
-  });
-}
+});
 
-export default StartServer;
+export default server;
