@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 dotenv.config({ path: "./Config.env" });
 const writeClient = require('./dbConnection');
 const cors = require('cors');
-const {validatePassword} = require('./crypt')
+const {generateSalt, hashPassword, validatePassword} = require('./crypt')
 
 const app = express();
 const PORT = 8080;
@@ -42,7 +42,7 @@ app.post("/api/check-user", async (req, res) => {
         // Ищем пользователя в базе данных по email
         const salt = await User.findOne({ email: email }).select({salt: 1, _id: 0}).lean();
         const passwordTrue = await User.findOne({ email: email }).select({password: 1, _id: 0}).lean();
-        const isValid = validatePassword(password, passwordTrue, salt.salt);
+        const isValid = validatePassword(password, passwordTrue.password, salt.salt);
         
         if (isValid) {
             res.status(200).json({ success: true, message: 'Добро пожаловать!', userId: User._id });
@@ -54,6 +54,28 @@ app.post("/api/check-user", async (req, res) => {
         res.status(500).json({ success: false, message: 'Ошибка сервера' });
     }
 });
+
+app.post("/api/create-user", async (req, res) =>{
+    const {UserName, email, password} = req.body;
+    const CreateSalt = generateSalt();
+    const HashedPaswd = hashPassword(password, CreateSalt);
+
+    const newUser = new User({
+        name: UserName,
+        email: email,
+        password: HashedPaswd,
+        salt: CreateSalt
+    })
+
+    try {
+        await newUser.save();
+        console.log("Пользователь успешно создан!")
+    } catch (error) {
+        console.log("Произошла ошибка создания пользователя", error)
+    }
+
+
+})
 
 
 // Запуск сервера

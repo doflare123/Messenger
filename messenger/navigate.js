@@ -9,7 +9,7 @@ const Stack = createStackNavigator();
 
 export default function Navigator() {
     return (
-            <Stack.Navigator>
+        <Stack.Navigator>
             <Stack.Screen
                 name="Authorization"
                 component={LoginScreen}
@@ -20,7 +20,7 @@ export default function Navigator() {
                         backgroundColor: "#0011",
                     },
                     headerTitleContainerStyle: {//положение текста взависимости от объектов
-                        marginTop: -48,
+                        marginTop: -25,
                     },
                     headerTitleStyle:{//стили текста
                         fontSize:30
@@ -28,7 +28,7 @@ export default function Navigator() {
                     headerTitleAlign: 'center'
                 }}
             />
-            {/* <Stack.Screen
+            <Stack.Screen
                 name="Registration"
                 component={RegisterScreen}
                 options={{ title: "Регистрация аккаунта",
@@ -37,13 +37,16 @@ export default function Navigator() {
                         backgroundColor: "#0011",
                     },
                     headerTitleContainerStyle: {//положение текста взависимости от объектов
-                        marginTop: -48,
+                        marginTop: -30,
                     },
                     headerTitleStyle:{//стили текста
                         fontSize:30
                     },
-                    headerTitleAlign: 'center' }}
-            /> */}
+                    headerTitleAlign: 'center',                
+                }
+                    
+                }
+            />
             <Stack.Screen
                 name="MainMenu"
                 component={MainScreen}

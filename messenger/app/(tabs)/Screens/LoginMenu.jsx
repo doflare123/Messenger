@@ -8,6 +8,10 @@ const URL = Constants.expoConfig.extra.apiUrl;
 export default function LoginScreen({ navigation }) {
     const [socket, setSocket] = useState(null);
 
+    const RegisterScreenCr =()=>{
+        navigation.navigate("Registration");
+    }
+
     useEffect(() => {
         const ws = new WebSocket(URL);  // Подключение к WebSocket-серверу
         setSocket(ws);
@@ -47,7 +51,7 @@ export default function LoginScreen({ navigation }) {
     return (
         <SafeAreaView style={styles.container}>
             <Formik
-                initialValues={{ email: '', password: '' }}
+                initialValues={{type:'login', email: '', password: ''}}
                 onSubmit={async values => {
                     if (socket && socket.readyState === WebSocket.OPEN) {
                         const message = JSON.stringify(values);  // Преобразуем данные формы в JSON-строку
@@ -73,6 +77,9 @@ export default function LoginScreen({ navigation }) {
                             onChangeText={handleChange('password')}
                             onBlur={handleBlur('password')}
                         />
+                        <TouchableOpacity style={styles.textReg} onPress={RegisterScreenCr}>
+                            <Text>Еще нет аккаунта?</Text>
+                        </TouchableOpacity>
                         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
                             <Text>Войти</Text>
                         </TouchableOpacity>
@@ -115,7 +122,7 @@ const styles = StyleSheet.create({
         width: 110
     },
     textReg: {
-        marginLeft: 50,
-        width: 0
+        paddingLeft: 128,
+        marginTop: -10
     }
 });
