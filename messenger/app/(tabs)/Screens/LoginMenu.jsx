@@ -8,7 +8,7 @@ const URL = Constants.expoConfig.extra.apiUrl;
 export default function LoginScreen({ navigation }) {
     const [socket, setSocket] = useState(null);
 
-    const RegisterScreenCr =()=>{
+    const RegisterScreenCr = () => {
         navigation.navigate("Registration");
     }
 
@@ -25,15 +25,17 @@ export default function LoginScreen({ navigation }) {
                 const response = JSON.parse(event.data);
                 if (response.success) {
                     Alert.alert("Успешно", response.message);
-                    // Навигация на следующий экран или другая логика при успешном входе
+                    navigation.navigate("MainMenu");
                 } else {
                     Alert.alert("Ошибка", response.message);
+                    if (response.message === "неверный логин или пароль" && formikRef.current) {
+                        formikRef.current.setFieldValue('password', ''); // Очищаем поле пароля
+                    }
                 }
             } catch (e) {
                 console.error('Ошибка при разборе сообщения:', e, event.data);
             }
         };
-        
 
         ws.onclose = (event) => {
             console.log("WebSocket соединение закрыто:", event);
@@ -48,11 +50,14 @@ export default function LoginScreen({ navigation }) {
         };
     }, []);
 
+    const formikRef = React.useRef();
+
     return (
         <SafeAreaView style={styles.container}>
             <Formik
-                initialValues={{type:'login', email: '', password: ''}}
-                onSubmit={async values => {
+                innerRef={formikRef}  // Привязываем ref к Formik
+                initialValues={{ type: 'login', email: '', password: '' }}
+                onSubmit={async (values) => {
                     if (socket && socket.readyState === WebSocket.OPEN) {
                         const message = JSON.stringify(values);  // Преобразуем данные формы в JSON-строку
                         socket.send(message);  // Отправляем данные на сервер

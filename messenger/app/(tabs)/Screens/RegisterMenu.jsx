@@ -79,7 +79,7 @@ export default function RegisterScreen() {
                         onBlur={handleBlur('password')}
                     />
                     <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                        <Text>Войти</Text>
+                        <Text>Регистрация</Text>
                     </TouchableOpacity>
                 </>
             )}
@@ -106,9 +106,9 @@ inputTextInput: {
 button: {
     paddingTop: 4,
     marginTop: 7,
-    marginLeft: 95,
+    marginLeft: 87,
     marginRight: 85,
-    width: 70,
+    width: 90,
     height: 30,
     backgroundColor: "#1e90ff",
     alignItems: 'center'

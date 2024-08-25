@@ -3,6 +3,8 @@ import http from 'http';
 import { WebSocketServer } from 'ws';
 import axios from 'axios';
 import dotenv from 'dotenv';
+import LoginCheck from './processingMessages/login.js';
+import RegisterCheck from "./processingMessages/register.js";
 
 dotenv.config({ path: "./Config.env" });
 
@@ -21,27 +23,12 @@ wss.on('connection', (ws) => {
         try {
             const { type, email, password, UserName } = JSON.parse(message.toString());
             
-            if (type === 'login') {
-                // Обработка логина
-                try {
-                    const response = await axios.post(process.env.URL_CHECK_USER, { email, password });
-                    ws.send(JSON.stringify(response.data)); // Отправляем успешный ответ клиенту
-                } catch (err) {
-                    console.error('Ошибка при отправке запроса:', err.message);
-                    ws.send(JSON.stringify({ success: false, message: 'Ошибка при отправке запроса на сервер' }));
-                }
-            } else if (type === 'register') {
-                // Обработка регистрации
-                try {
-                    const response = await axios.post(process.env.URL_CREATE_USER, { UserName, email, password });
-                    ws.send(JSON.stringify(response.data)); // Отправляем успешный ответ клиенту
-                } catch (err) {
-                    console.error('Ошибка при отправке запроса:', err.message);
-                    ws.send(JSON.stringify({ success: false, message: 'Ошибка при отправке запроса на сервер' }));
-                }
-            } else {
+            if (type === 'login') 
+                LoginCheck(ws, email, password);
+            else if (type === 'register') 
+                RegisterCheck(ws, UserName, email, password );
+            else 
                 ws.send(JSON.stringify({ success: false, message: 'Неверный тип запроса' }));
-            }
         } catch (error) {
             console.error('Ошибка при обработке данных:', error.message);
             ws.send(JSON.stringify({ success: false, message: 'Ошибка при обработке данных' }));

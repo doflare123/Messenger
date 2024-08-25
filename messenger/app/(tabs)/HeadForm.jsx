@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   Head: {
-    paddingTop: 30,
+    paddingTop: -100,
     height: 120,
     backgroundColor: 'silver',
     flexDirection: 'row',

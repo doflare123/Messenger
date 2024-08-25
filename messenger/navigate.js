@@ -32,17 +32,17 @@ export default function Navigator() {
                 name="Registration"
                 component={RegisterScreen}
                 options={{ title: "Регистрация аккаунта",
-                    headerStyle: { //шапка
+                    headerStyle: {
                         height: 80, 
                         backgroundColor: "#0011",
                     },
-                    headerTitleContainerStyle: {//положение текста взависимости от объектов
+                    headerTitleContainerStyle: {
                         marginTop: -30,
                     },
-                    headerTitleStyle:{//стили текста
+                    headerTitleStyle:{
                         fontSize:30
                     },
-                    headerTitleAlign: 'center',                
+                    headerTitleAlign: 'center',             
                 }
                     
                 }
@@ -50,7 +50,10 @@ export default function Navigator() {
             <Stack.Screen
                 name="MainMenu"
                 component={MainScreen}
-                options={{ title: "Диалоги" }}
+                options={{
+                    headerShown: false
+                 }
+            }
             />
         </Stack.Navigator>
     );

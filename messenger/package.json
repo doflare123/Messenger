@@ -38,6 +38,7 @@
     "expo-web-browser": "~13.0.3",
     "express": "^4.19.2",
     "formik": "^2.4.6",
+    "jsonwebtoken": "^9.0.2",
     "metro-react-native-babel-preset": "^0.77.0",
     "mongodb": "^6.8.0",
     "mongoose": "^8.5.2",
