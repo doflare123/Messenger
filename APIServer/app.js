@@ -2,14 +2,16 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 dotenv.config({ path: "./Config.env" });
-const writeClient = require('./dbConnection');
+const writeUri = require('./dbConnection');
 const cors = require('cors');
-const {generateSalt, hashPassword, validatePassword} = require('./security/crypt')
-const {EmailValid} = require("./processingServer/ChekingEmail");
+const { generateSalt, hashPassword, validatePassword } = require('./security/crypt');
+const { EmailValid } = require("./processingServer/ChekingEmail");
 const CreateJWT = require("./security/Create_jwt");
-
+const Dialogs = require("./ChatLogic/SearchAllChats");
+const User = require('./modules/Users'); 
 const app = express();
 const PORT = 8080;
+
 
 app.use(express.json());
 
@@ -19,22 +21,12 @@ app.use(cors({
 }));
 
 // Подключение к MongoDB
-mongoose.connect(writeClient, {
+mongoose.connect(writeUri, {
 }).then(() => {
     console.log('Подключено к MongoDB');
 }).catch((error) => {
     console.error('Ошибка подключения к MongoDB:', error);
 });
-
-// Схема пользователя
-const Users = new mongoose.Schema({
-    name: String,
-    email: String,
-    password: String,
-    salt: String,
-    Jwt: String
-});
-const User = mongoose.model('Users', Users);
 
 const isEmailUnique = async (email) => {
     try {
@@ -45,32 +37,44 @@ const isEmailUnique = async (email) => {
     }
 };
 
-// Маршрут для проверки существования пользователя
 app.post("/api/check-user", async (req, res) => {
     const { email, password } = req.body;
     try {
-        // Ищем пользователя в базе данных по email
-        const salt = await User.findOne({ email: email }).select({salt: 1, _id: 0}).lean();
-        const passwordTrue = await User.findOne({ email: email }).select({password: 1, _id: 0}).lean();
-        const UserNameGet = await User.findOne({email: email}).select({name: 1, _id: 1}).lean();
-        const isValid = validatePassword(password, passwordTrue.password, salt.salt);
-        
-        if (isValid) {
-            try {
-                const JWT_token = await CreateJWT(UserNameGet._id, UserNameGet.name);
-                await User.findByIdAndUpdate(UserNameGet._id, {
-                    Jwt: JWT_token
-                });
-                res.status(200).json({ success: true, message: 'Добро пожаловать!', userId: User._id });
-            } catch (error) {
-                console.log(error, "Ошибка при создании токена");
-            }
-        } else {
-            res.status(400).json({ success: false, message: 'Неверный логин или пароль'});
+        const user = await User.findOne({ email }).select({ salt: 1, password: 1, name: 1, _id: 1 }).lean();
+
+        if (!user) {
+            console.log("User not found");
+            return res.status(400).json({ success: false, message: 'Пользователь не найден' });
         }
+
+        const isValid = validatePassword(password, user.password, user.salt);
+
+        if (!isValid) {
+            console.log("Invalid password");
+            return res.status(400).json({ success: false, message: 'Неверный логин или пароль' });
+        }
+        
+        const JWT_token = await CreateJWT(user._id, user.name);
+
+        const updatedUser = await User.findByIdAndUpdate(user._id, { Jwt: JWT_token }, { new: true }).lean();
+        console.log("Updated User:", updatedUser);
+
+        if (!updatedUser) {
+            console.log("Error updating token");
+            return res.status(500).json({ success: false, message: 'Ошибка обновления токена' });
+        }
+
+        console.log("Sending success response");
+        return res.status(200).json({
+            success: true,
+            message: 'Добро пожаловать!',
+            token: JWT_token,
+            id: updatedUser._id.toString(),
+        });
+
     } catch (error) {
         console.error('Ошибка при проверке пользователя:', error);
-        res.status(500).json({ success: false, message: 'Ошибка сервера' });
+        return res.status(500).json({ success: false, message: 'Ошибка сервера' });
     }
 });
 
@@ -107,6 +111,32 @@ app.post("/api/create-user", async (req, res) =>{
         console.log("Произошла ошибка создания пользователя", error)
     }
 })
+
+app.post('/api/SearchAllUnikChats', async (req, res) => {
+    console.log("Start search")
+    const { JwtToken, UserId } = req.body;
+    try {
+        const user = await User.findOne({ Jwt: JwtToken }).lean();
+        if (user) {
+            try {
+                const FindDialogs = await Dialogs(UserId);
+                res.status(200).json({ success: true, FindDialogs });
+            } catch (error) {
+                console.error("Error finding dialogs:", error);
+                res.status(405).json({success:false, message: "Что-то пошло не так при поиске диалогов"});
+            }
+        } else {
+            console.log("Invalid token or user not found");
+            res.status(403).json({ success: false, message: 'Ошибка в токене' });
+        }
+    } catch (error) {
+        console.error("Ошибка поиска диалогов:", error);
+        res.status(500).json({ success: false, message: 'Ошибка сервера' });
+    }
+});
+
+
+
 
 
 // Запуск сервера

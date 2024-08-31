@@ -1,66 +1,65 @@
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useCallback } from 'react';
 import { SafeAreaView, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Formik } from 'formik';
-import Constants from 'expo-constants';
-
-const URL = Constants.expoConfig.extra.apiUrl;
+import { useWebSocket } from '@/WebSoket/WSConnection';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen({ navigation }) {
-    const [socket, setSocket] = useState(null);
+    const socket = useWebSocket();
+    const formikRef = useRef();
 
     const RegisterScreenCr = () => {
         navigation.navigate("Registration");
     }
 
-    useEffect(() => {
-        const ws = new WebSocket(URL);  // Подключение к WebSocket-серверу
-        setSocket(ws);
-
-        ws.onopen = () => {
-            console.log("Соединение установлено");
-        };
-
-        ws.onmessage = (event) => {
-            try {
-                const response = JSON.parse(event.data);
-                if (response.success) {
-                    Alert.alert("Успешно", response.message);
-                    navigation.navigate("MainMenu");
-                } else {
-                    Alert.alert("Ошибка", response.message);
-                    if (response.message === "неверный логин или пароль" && formikRef.current) {
-                        formikRef.current.setFieldValue('password', ''); // Очищаем поле пароля
+    const handleMessage = useCallback(async (event) => {
+        try {
+            const response = JSON.parse(event.data);
+            if (response.success) {
+                if (response.token && response.id) {  // Проверяем наличие token и id
+                    console.log(response);
+                    try {
+                        await AsyncStorage.setItem('JwtToken', response.token);
+                        await AsyncStorage.setItem('_id', response.id);
+                        Alert.alert("Успешно", response.message);
+                        navigation.replace("MainMenu");
+                    } catch (error) {
+                        console.log(error);
+                        Alert.alert("Не сохранило данные.");
                     }
+                } else {
+                    console.log("Server res: ", response);
+                    Alert.alert("Ошибка", "Некорректные данные с сервера.");
                 }
-            } catch (e) {
-                console.error('Ошибка при разборе сообщения:', e, event.data);
+            } else {
+                Alert.alert("Ошибка", response.message);
+                if (response.message === "неверный логин или пароль" && formikRef.current) {
+                    formikRef.current.setFieldValue('password', ''); // Очищаем поле пароля
+                }
             }
-        };
+        } catch (e) {
+            console.error('Ошибка при разборе сообщения:', e, event.data);
+        }
+    }, [navigation]);    
 
-        ws.onclose = (event) => {
-            console.log("WebSocket соединение закрыто:", event);
-        };
-
-        ws.onerror = (error) => {
-            console.log("Ошибка WebSocket:", error);
-        };
-
-        return () => {
-            ws.close(1000, "Компонент размонтирован, соединение закрыто");
-        };
-    }, []);
-
-    const formikRef = React.useRef();
+    React.useEffect(() => {
+        if (socket) {
+            socket.addEventListener('message', handleMessage);
+            return () => {
+                socket.removeEventListener('message', handleMessage);
+            };
+        }
+    }, [socket, handleMessage]);
 
     return (
         <SafeAreaView style={styles.container}>
             <Formik
-                innerRef={formikRef}  // Привязываем ref к Formik
+                innerRef={formikRef}
                 initialValues={{ type: 'login', email: '', password: '' }}
                 onSubmit={async (values) => {
                     if (socket && socket.readyState === WebSocket.OPEN) {
-                        const message = JSON.stringify(values);  // Преобразуем данные формы в JSON-строку
-                        socket.send(message);  // Отправляем данные на сервер
+                        const message = JSON.stringify(values);
+                        socket.send(message);
                     }
                 }}
             >
@@ -118,13 +117,6 @@ const styles = StyleSheet.create({
         height: 30,
         backgroundColor: "#1e90ff",
         alignItems: 'center'
-    },
-    touchableText: {
-        color: "#458ed6",
-        fontSize: 12,
-        marginTop: -9,
-        marginLeft: 96,
-        width: 110
     },
     textReg: {
         paddingLeft: 128,

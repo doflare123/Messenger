@@ -4,57 +4,60 @@ import LoginScreen from './app/(tabs)/Screens/LoginMenu';
 import RegisterScreen from './app/(tabs)/Screens/RegisterMenu';
 import MainScreen from './app/(tabs)/Screens/MainMenu';
 import { NavigationContainer } from '@react-navigation/native';
+import { WebSocketProvider } from './WebSoket/WSConnection';
 
 const Stack = createStackNavigator();
 
 export default function Navigator() {
     return (
-        <Stack.Navigator>
-            <Stack.Screen
-                name="Authorization"
-                component={LoginScreen}
-                options={{ 
-                    title: "Вход в аккаунт",
-                    headerStyle: { //шапка
-                        height: 80, 
-                        backgroundColor: "#0011",
-                    },
-                    headerTitleContainerStyle: {//положение текста взависимости от объектов
-                        marginTop: -25,
-                    },
-                    headerTitleStyle:{//стили текста
-                        fontSize:30
-                    },
-                    headerTitleAlign: 'center'
-                }}
-            />
-            <Stack.Screen
-                name="Registration"
-                component={RegisterScreen}
-                options={{ title: "Регистрация аккаунта",
-                    headerStyle: {
-                        height: 80, 
-                        backgroundColor: "#0011",
-                    },
-                    headerTitleContainerStyle: {
-                        marginTop: -30,
-                    },
-                    headerTitleStyle:{
-                        fontSize:30
-                    },
-                    headerTitleAlign: 'center',             
+        <WebSocketProvider>
+            <Stack.Navigator>
+                <Stack.Screen
+                    name="Authorization"
+                    component={LoginScreen}
+                    options={{ 
+                        title: "Вход в аккаунт",
+                        headerStyle: { //шапка
+                            height: 80, 
+                            backgroundColor: "#0011",
+                        },
+                        headerTitleContainerStyle: {//положение текста взависимости от объектов
+                            marginTop: -25,
+                        },
+                        headerTitleStyle:{//стили текста
+                            fontSize:30
+                        },
+                        headerTitleAlign: 'center'
+                    }}
+                />
+                <Stack.Screen
+                    name="Registration"
+                    component={RegisterScreen}
+                    options={{ title: "Регистрация аккаунта",
+                        headerStyle: {
+                            height: 80, 
+                            backgroundColor: "#0011",
+                        },
+                        headerTitleContainerStyle: {
+                            marginTop: -30,
+                        },
+                        headerTitleStyle:{
+                            fontSize:30
+                        },
+                        headerTitleAlign: 'center',             
+                    }
+                        
+                    }
+                />
+                <Stack.Screen
+                    name="MainMenu"
+                    component={MainScreen}
+                    options={{
+                        headerShown: false
+                    }
                 }
-                    
-                }
-            />
-            <Stack.Screen
-                name="MainMenu"
-                component={MainScreen}
-                options={{
-                    headerShown: false
-                 }
-            }
-            />
-        </Stack.Navigator>
+                />
+            </Stack.Navigator>
+        </WebSocketProvider>
     );
 }

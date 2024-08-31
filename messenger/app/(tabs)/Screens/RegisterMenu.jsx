@@ -4,11 +4,12 @@ import { Formik } from 'formik';
 import Head from '../HeadForm';
 import { Modal } from 'react-native';
 import Constants from 'expo-constants';
+import { useWebSocket } from '@/WebSoket/WSConnection';
 
 const URL = Constants.expoConfig.extra.apiUrl;
 
 export default function RegisterScreen() {
-  const [socket, setSocket] = useState(null);
+    const socket = useWebSocket();
 
   useEffect(() => {
     const ws = new WebSocket(URL);  // Подключение к WebSocket-серверу
