@@ -17,7 +17,6 @@ export default function LoginScreen({ navigation }) {
             const response = JSON.parse(event.data);
             if (response.success) {
                 if (response.token && response.id) {  // Проверяем наличие token и id
-                    console.log(response);
                     try {
                         await AsyncStorage.setItem('JwtToken', response.token);
                         await AsyncStorage.setItem('_id', response.id);
@@ -28,8 +27,7 @@ export default function LoginScreen({ navigation }) {
                         Alert.alert("Не сохранило данные.");
                     }
                 } else {
-                    console.log("Server res: ", response);
-                    Alert.alert("Ошибка", "Некорректные данные с сервера.");
+                    console.log("Возможно баг");
                 }
             } else {
                 Alert.alert("Ошибка", response.message);

@@ -16,6 +16,7 @@ async function Dialogs(userId) {
         
         messages.forEach(message => {
             const partnerId = message.sender === userId ? message.receiver : message.sender;
+
             if (!chats[partnerId] || new Date(chats[partnerId].lastMessage.time) < new Date(message.time)) {
                 chats[partnerId] = {
                     partnerId,

@@ -9,6 +9,8 @@ const { EmailValid } = require("./processingServer/ChekingEmail");
 const CreateJWT = require("./security/Create_jwt");
 const Dialogs = require("./ChatLogic/SearchAllChats");
 const User = require('./modules/Users'); 
+const Chat = require('./ChatLogic/Chat')
+
 const app = express();
 const PORT = 8080;
 
@@ -57,7 +59,6 @@ app.post("/api/check-user", async (req, res) => {
         const JWT_token = await CreateJWT(user._id, user.name);
 
         const updatedUser = await User.findByIdAndUpdate(user._id, { Jwt: JWT_token }, { new: true }).lean();
-        console.log("Updated User:", updatedUser);
 
         if (!updatedUser) {
             console.log("Error updating token");
@@ -122,11 +123,11 @@ app.post('/api/SearchAllUnikChats', async (req, res) => {
                 const FindDialogs = await Dialogs(UserId);
                 res.status(200).json({ success: true, FindDialogs });
             } catch (error) {
-                console.error("Error finding dialogs:", error);
+                console.error("Ошибка поиска диалогов:", error);
                 res.status(405).json({success:false, message: "Что-то пошло не так при поиске диалогов"});
             }
         } else {
-            console.log("Invalid token or user not found");
+            console.log("Не найден пользователь или неправильный токен");
             res.status(403).json({ success: false, message: 'Ошибка в токене' });
         }
     } catch (error) {
@@ -134,6 +135,31 @@ app.post('/api/SearchAllUnikChats', async (req, res) => {
         res.status(500).json({ success: false, message: 'Ошибка сервера' });
     }
 });
+
+app.post('/api/SearchAllMessages', async (req, res) => {
+    console.log("Start search messages");
+    const { JwtToken, UserId, AponentName } = req.body;
+
+    try {
+        const user = await User.findOne({ Jwt: JwtToken }).lean();
+        if (!user) {
+            console.log("Не найден пользователь или неправильный токен");
+            return res.status(403).json({ success: false, message: 'Ошибка в токене' });
+        }
+        try {
+            const FindMessages = await Chat(UserId, AponentName);
+            res.status(200).json({ success: true, FindMessages });
+        } catch (error) {
+            console.error("Ошибка поиска сообщений:", error);
+            res.status(405).json({ success: false, message: "Что-то пошло не так при поиске сообщений" });
+        }
+    } catch (error) {
+        console.error("Ошибка поиска сообщений:", error);
+        res.status(500).json({ success: false, message: 'Ошибка сервера' });
+    }
+});
+    
+
 
 
 

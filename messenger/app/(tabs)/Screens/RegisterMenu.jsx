@@ -1,7 +1,6 @@
 import {StyleSheet, View, Text, SafeAreaView, TextInput, TouchableOpacity, Alert} from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { Formik } from 'formik';
-import Head from '../HeadForm';
 import { Modal } from 'react-native';
 import Constants from 'expo-constants';
 import { useWebSocket } from '@/WebSoket/WSConnection';

@@ -27,12 +27,12 @@ const styles = StyleSheet.create({
   },
   Head: {
     paddingTop: -100,
-    height: 120,
+    height: 100,
     backgroundColor: 'silver',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingHorizontal: 5,
+    paddingHorizontal: 1,
   },
   textContainer: {
     flex: 1,
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   },
   text: {
     marginLeft: -240,
-    marginTop: 8,
+    marginTop: 2,
     fontSize: 25,
     color: 'black',
     fontFamily: 'SemiBold'
