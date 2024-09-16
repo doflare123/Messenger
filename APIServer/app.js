@@ -82,12 +82,12 @@ app.post("/api/check-user", async (req, res) => {
 app.post("/api/create-user", async (req, res) =>{
     const {UserName, email, password} = req.body;
 
-    // Проверка валидности email
-    if (!EmailValid(email)) {
-        return res.status(402).json({ success: false, message: 'Некорректный формат электронной почты' });
-    }
-    else
-        isEmailUnique();
+    // // Проверка валидности email
+    // if (!EmailValid(email)) {
+    //     return res.status(402).json({ success: false, message: 'Некорректный формат электронной почты' });
+    // }
+    // else
+    //     isEmailUnique();
 
     // Проверка уникальности email
     if (!(await isEmailUnique(email))) {

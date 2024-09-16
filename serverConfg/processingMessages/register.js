@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { WebSocketServer } from 'ws';
 
-async function RegisterCheck(ws, UserName, email, password ) {
+async function RegisterCheck(ws, {UserName, email, password} ) {
     try {
         const response = await axios.post(process.env.URL_CREATE_USER, { UserName, email, password });
         ws.send(JSON.stringify(response.data)); //успешный ответ клиенту

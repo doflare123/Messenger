@@ -12,7 +12,6 @@ export default function RegisterScreen() {
 
   useEffect(() => {
     const ws = new WebSocket(URL);  // Подключение к WebSocket-серверу
-    setSocket(ws);
 
     ws.onopen = () => {
         console.log("Соединение установлено");
