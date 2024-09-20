@@ -13,7 +13,7 @@ async function RegisterCheck(ws, {UserName, email, password} ) {
                 break;
             case 403:
                 console.error('Ошибка при отправке запроса:', err.message);
-                ws.send(JSON.stringify({ success: false, message: 'Электронная почта уже используется' }));
+                ws.send(JSON.stringify({ success: false, message: 'Электронная почта или никнейм уже используется' }));
                 break;
             default:
                 console.error('Ошибка при отправке запроса:', err.message);

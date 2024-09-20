@@ -9,7 +9,9 @@ const { EmailValid } = require("./processingServer/ChekingEmail");
 const CreateJWT = require("./security/Create_jwt");
 const Dialogs = require("./ChatLogic/SearchAllChats");
 const User = require('./modules/Users'); 
-const Chat = require('./ChatLogic/Chat')
+const Chat = require('./ChatLogic/Chat');
+const { SendingMess } = require('./ChatLogic/SendMessage');
+const { SearchUs } = require('./ChatLogic/SearchUsers');
 
 const app = express();
 const PORT = 8080;
@@ -33,6 +35,15 @@ mongoose.connect(writeUri, {
 const isEmailUnique = async (email) => {
     try {
         const user = await User.findOne({ email: email });
+        return !user;
+    } catch (error) {
+        console.log("Ошибка сервера", error)
+    }
+};
+
+const isUserNameUnique = async (UserName) => {
+    try {
+        const user = await User.findOne({ name: UserName });
         return !user;
     } catch (error) {
         console.log("Ошибка сервера", error)
@@ -82,17 +93,13 @@ app.post("/api/check-user", async (req, res) => {
 app.post("/api/create-user", async (req, res) =>{
     const {UserName, email, password} = req.body;
 
-    // // Проверка валидности email
-    // if (!EmailValid(email)) {
-    //     return res.status(402).json({ success: false, message: 'Некорректный формат электронной почты' });
-    // }
-    // else
-    //     isEmailUnique();
-
     // Проверка уникальности email
     if (!(await isEmailUnique(email))) {
         return res.status(403).json({ success: false, message: 'Электронная почта уже используется' });
     }
+    if(!(await isUserNameUnique(UserName)))
+        return res.status(403).json({ success: false, message: 'Никнейм уже используется' });
+    
 
     const CreateSalt = generateSalt();
     const HashedPaswd = hashPassword(password, CreateSalt);
@@ -158,7 +165,59 @@ app.post('/api/SearchAllMessages', async (req, res) => {
         res.status(500).json({ success: false, message: 'Ошибка сервера' });
     }
 });
-    
+
+app.post('/api/SentMessage', async (req, res) => {
+    console.log("Sending message");
+    console.log(req.body)
+    const {DataTime, JwtToken, recipient, sender, text, Data} = req.body;
+
+    try {
+        const user = await User.findOne({ Jwt: JwtToken }).lean();
+        if (!user) {
+            console.log("Не найден пользователь или неправильный токен");
+            return res.status(403).json({ success: false, message: 'Ошибка в токене' });
+        }
+        try {
+            const SentMess = await SendingMess(text, sender, recipient, DataTime, Data);
+            console.log("Новое сообщение:", SentMess);
+            res.status(200);
+        } catch (error) {
+            console.error("Ошибка сохранения сообщений:", error);
+            res.status(405).json({ success: false, message: "Что-то пошло не так при поиске сообщений" });
+        }
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({success:false, message:"При отправке сообщения произошла ошибка"})
+    }
+
+});
+
+app.post('/api/SearchUsers', async (req, res) => {
+    console.log("start search users");
+    const { JwtToken, searchQuery } = req.body;
+    try {
+        const user = await User.findOne({ Jwt: JwtToken }).lean();
+        if (!user) {
+            return res.status(403).json({ success: false, message: 'Ошибка в токене' });
+        }
+        try {
+            const users = await SearchUs(searchQuery);
+            console.log(users)
+            res.status(200).json({
+                success: true,
+                type: 'SearchUserResponse',
+                data: users
+            });
+        } catch (error) {
+            console.error('Ошибка поиска пользователей:', error);
+            res.status(500).json({ success: false, message: 'Ошибка поиска пользователей' });
+        }
+    } catch (error) {
+        console.error('Ошибка проверки токена:', error);
+        res.status(500).json({ success: false, message: 'Ошибка проверки токена' });
+    }
+});
 
 
 

@@ -84,20 +84,25 @@ export default function ChatWithUser({ route, navigation }) {
         const UserId = await GetUserId();
         if (messageText.trim() === '') return;
 
+        const currentDate = new Date().toLocaleDateString('en-CA'); // 'en-CA' формирует дату как YYYY-MM-DD
         const currentTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
 
-        const message = {
-            type: 'NewMessage',
-            JwtToken: JwtToken,
-            text: messageText,
-            sender: UserId,
-            recipient: title,
-            DataTime: currentTime
-        };
-
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            socket.send(JSON.stringify(message));
-            setMessageText('');
+        if(JwtToken&&UserId){
+            const message = {
+                type: 'NewMessage',
+                JwtToken: JwtToken,
+                text: messageText,
+                sender: UserId,
+                recipient: title,
+                DataTime: currentTime,
+                Data: currentDate,
+            };
+            
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                console.log(message);
+                socket.send(JSON.stringify(message));
+                setMessageText('');
+            }
         }
     };
 
