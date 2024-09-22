@@ -12,27 +12,47 @@ const PORT = 3000;
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
+const usersSockets = new Map(); // Сохраняем WebSocket для каждого пользователя
+
 wss.on('connection', (ws) => {
     console.log('Новое WebSocket-соединение установлено');
 
     ws.on('message', async (message) => {
         try {
             const data = JSON.parse(message.toString());
-            const hendler = messageHandlers[data.type];
-            if(hendler)
-                hendler(ws, data);
-            else
-                ws.send(JSON.stringify({success: false, message: "Тип запроса не найден"}));
+
+            // Регистрация соединения пользователя
+            if (data.type === 'registerС') {
+                usersSockets.set(data.userId, ws);
+                console.log(`Пользователь ${data.userId} подключен`);
+                return;
+            }
+
+            // Обработка сообщения
+            const handler = messageHandlers[data.type];
+            if (handler) {
+                handler(ws, data, usersSockets); // Передаем usersSockets для доступа к другим соединениям
+            } else {
+                ws.send(JSON.stringify({ success: false, message: 'Тип запроса не найден' }));
+            }
         } catch (error) {
             console.error('Ошибка при обработке данных:', error.message);
             ws.send(JSON.stringify({ success: false, message: 'Ошибка при обработке данных' }));
         }
     });
 
-    ws.on('close', (code, reason) => {
-        console.log(`Соединение закрыто. Код: ${code}, Причина: ${reason}`);
+    ws.on('close', () => {
+        for (let [userId, socket] of usersSockets.entries()) {
+            if (socket === ws) {
+                usersSockets.delete(userId);
+                console.log(`Пользователь ${userId} отключен`);
+                break;
+            }
+        }
     });
+    
 });
+
 // Запуск сервера
 server.listen(PORT, (err) => {
     if (err) {

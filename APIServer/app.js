@@ -82,6 +82,7 @@ app.post("/api/check-user", async (req, res) => {
             message: 'Добро пожаловать!',
             token: JWT_token,
             id: updatedUser._id.toString(),
+            name: user.name
         });
 
     } catch (error) {
@@ -180,7 +181,7 @@ app.post('/api/SentMessage', async (req, res) => {
         try {
             const SentMess = await SendingMess(text, sender, recipient, DataTime, Data);
             console.log("Новое сообщение:", SentMess);
-            res.status(200);
+            res.status(200).json({success: true, SentMess});
         } catch (error) {
             console.error("Ошибка сохранения сообщений:", error);
             res.status(405).json({ success: false, message: "Что-то пошло не так при поиске сообщений" });

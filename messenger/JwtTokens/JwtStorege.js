@@ -19,7 +19,18 @@ export const GetUserId = async () => {//получение токена из х�
             return id;
         }
     } catch (error) {
-        console.error('Ошибка при извлечении токена:', error);
+        console.error('Ошибка при извлечении id:', error);
     }
     return null;
 };
+
+export const GetUserName = async () =>{
+    try {
+        const name = await AsyncStorage.getItem('UserName');
+        if(name !== null){
+            return name;
+        }
+    } catch (error) {
+        console.error('Ошибка при извлечении имени:', error);
+    }
+}

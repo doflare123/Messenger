@@ -4,10 +4,12 @@ import { useWebSocket } from '@/WebSoket/WSConnection';
 import { GetToken } from '../../../JwtTokens/JwtStorege';
 
 const CustomHeader = ({ route, navigation }) => {
-    const [inputValue, setInputValue] = useState(''); //введенные данные
-    const [users, setUsers] = useState([]); //рез поиска пользователей
+    const [inputValue, setInputValue] = useState(''); // Введенные данные
+    const [users, setUsers] = useState([]); // Результаты поиска пользователей
+    const [showResults, setShowResults] = useState(false); // Флаг для отображения результатов поиска
     const socket = useWebSocket();
 
+    // Функция для поиска пользователей
     const handleSearch = async () => {
         if (!inputValue.trim()) {
             // Если поле пустое, ничего не делаем
@@ -30,17 +32,28 @@ const CustomHeader = ({ route, navigation }) => {
         }
     };
 
-    const handleSubmitEditing = () => {
-        handleSearch();
-    };
+    // Отправка запроса при изменении inputValue с задержкой
+    useEffect(() => {
+        const timerId = setTimeout(() => {
+            handleSearch(); // Выполнить поиск через 500 мс после ввода
+        }, 500);
+
+        // Очищаем таймер при каждом новом вводе
+        return () => clearTimeout(timerId);
+    }, [inputValue]);
 
     // Обработка входящих сообщений от WebSocket
     useEffect(() => {
+        if (!inputValue.trim()) {
+            // Если поле пустое, ничего не делаем
+            return;
+        }
         const handleMessage = (event) => {
             const response = JSON.parse(event.data);
-            
+
             if (response.success && response.data) {
                 setUsers(response.data);
+                setShowResults(true); // Показываем результаты при получении данных
             }
         };
 
@@ -51,32 +64,22 @@ const CustomHeader = ({ route, navigation }) => {
             };
         }
     }, [socket]);
+
+    // Автоматическое скрытие плашки с результатами через 10 секунд
     useEffect(() => {
-        if (!inputValue.trim()) {
-            // Если поле пустое, ничего не делаем
-            return;
+        if (showResults) {
+            const hideResultsTimeout = setTimeout(() => {
+                setShowResults(false);
+            }, 10000); // Скрываем через 10 секунд
+
+            return () => clearTimeout(hideResultsTimeout); // Чистим таймер при обновлении
         }
-        const handleMessage = (event) => {
-            const response = JSON.parse(event.data);
-            console.log(response.data, 123)
-            if (response.success && response.data) {
-                setUsers(response.data);
-            }
-        };
-    
-        if (socket) {
-            socket.addEventListener('message', handleMessage);
-        }
-    
-        // Очистка при размонтировании компонента
-        return () => {
-            if (socket) {
-                socket.removeEventListener('message', handleMessage);
-            }
-            setUsers([]);  // Очищаем результаты поиска при уходе с экрана
-        };
-    }, [socket]);
-    
+    }, [showResults]);
+
+    // Скрытие результатов при фокусе на текстовом инпуте
+    const handleFocus = () => {
+        setShowResults(false); // Скрываем плашку при фокусе на инпуте
+    };
 
     // Функция для рендеринга каждого элемента списка пользователей
     const renderUserItem = ({ item }) => (
@@ -88,8 +91,11 @@ const CustomHeader = ({ route, navigation }) => {
     );
 
     const ClickInSearch = (username) => {
+        if (!inputValue.trim()) {
+            // Если поле пустое, ничего не делаем
+            return;
+        }
         setInputValue('');
-        console.log(username)
         navigation.navigate("Chat", { title: username });
     }
 
@@ -102,21 +108,18 @@ const CustomHeader = ({ route, navigation }) => {
                     placeholder="🔍 Поиск..."
                     value={inputValue}
                     onChangeText={setInputValue}
-                    onSubmitEditing={handleSubmitEditing}
+                    onFocus={handleFocus} // Скрываем плашку при фокусе на инпуте
                 />
-                <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-                    <Text style={styles.searchButtonText}>🔍</Text>
-                </TouchableOpacity>
             </View>
-                {users.length > 0 && (
-                    <View style={styles.resultsContainer}>
-                        <FlatList
-                            data={users}
-                            keyExtractor={(item) => item.username}
-                            renderItem={renderUserItem}
-                        />
-                    </View>
-                )}
+            {showResults && users.length > 0 && (
+                <View style={styles.resultsContainer}>
+                    <FlatList
+                        data={users}
+                        keyExtractor={(item, index) => item.username + index}
+                        renderItem={renderUserItem}
+                    />
+                </View>
+            )}
         </View>
     );
 };
@@ -135,6 +138,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     searchContainer: {
+        marginLeft: 15,
+        marginTop: 7,
         flexDirection: 'row',
         alignItems: 'center',
     },
@@ -147,16 +152,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'gray',
         marginRight: 10,
-    },
-    searchButton: {
-        backgroundColor: 'lightgray',
-        borderRadius: 15,
-        padding: 5,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    searchButtonText: {
-        fontSize: 20,
     },
     resultsContainer: {
         position: 'absolute',

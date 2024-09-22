@@ -9,20 +9,27 @@ async function Dialogs(userId) {
         // Найти все сообщения для данного пользователя
         const messages = await Chatmessege.find({
             $or: [{ sender: userId }, { receiver: userId }]
-        }).sort({ date: -1, time: -1 }).lean();
+        })
+        .sort({ data: -1, time: -1 }) // Сортировка по дате и времени
+        .lean();
 
         // Собрать уникальных партнеров и последнее сообщение с ними
         const chats = {};
-        
+
         messages.forEach(message => {
             const partnerId = message.sender === userId ? message.receiver : message.sender;
 
-            if (!chats[partnerId] || new Date(chats[partnerId].lastMessage.time) < new Date(message.time)) {
+            // Создаем полную временную метку для сравнения
+            const messageTimestamp = new Date(`${message.data}T${message.time}`);
+
+            // Сравниваем временные метки сообщений, чтобы выбрать последнее
+            if (!chats[partnerId] || new Date(`${chats[partnerId].lastMessage.data}T${chats[partnerId].lastMessage.time}`) < messageTimestamp) {
                 chats[partnerId] = {
                     partnerId,
                     lastMessage: {
                         text: message.text,
-                        time: message.time
+                        data: message.data, // Добавляем дату
+                        time: message.time  // Добавляем время
                     }
                 };
             }
@@ -50,5 +57,6 @@ async function Dialogs(userId) {
         throw new Error("Ошибка поиска чатов");
     }
 }
+
 
 module.exports = Dialogs;

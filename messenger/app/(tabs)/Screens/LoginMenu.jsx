@@ -20,6 +20,7 @@ export default function LoginScreen({ navigation }) {
                     try {
                         await AsyncStorage.setItem('JwtToken', response.token);
                         await AsyncStorage.setItem('_id', response.id);
+                        await AsyncStorage.setItem('UserName', response.name)
                         Alert.alert("Успешно", response.message);
                         navigation.replace("MainMenu");
                     } catch (error) {
