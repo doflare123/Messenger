@@ -4,6 +4,8 @@ import ChekAllChats from "./AllChatsShow.js";
 import SearchAllMesseges from "./AllMesseges.js"
 import Sentmess from "./SendMess.js";
 import SearchUsers from "./SearchUsers.js";
+import UserName from "./ChangeUserName.js"
+import UserPass from './ChangeUserPass.js';
 
 const messageHandlers = {
     login: LoginCheck,
@@ -12,6 +14,8 @@ const messageHandlers = {
     AllMesseges: SearchAllMesseges,
     NewMessage: Sentmess,
     SearchUser: SearchUsers,
+    ChangeName: UserName,
+    ChangePass: UserPass
 };
 
 export default messageHandlers;

@@ -221,6 +221,52 @@ app.post('/api/SearchUsers', async (req, res) => {
 });
 
 
+app.post('/api/ChangeUserName', async (req, res) => {
+    const  {JwtToken, UserId, NewName } = req.body;
+    try {
+        const user = await User.findOne({ _id: UserId, Jwt: JwtToken }).lean();
+
+        if (!user) {
+            return res.status(403).json({ success: false, message: 'Неправильный токен или пользователь не найден' });
+        }
+
+        // Проверяем уникальность нового имени
+        if (!(await isUserNameUnique(NewName))) {
+            return res.status(404).json({ success: false, message: 'Имя уже используется' });
+        }
+
+        // Обновляем имя пользователя
+        await User.findByIdAndUpdate(UserId, { name: NewName });
+        return res.status(200).json({ success: true, message: 'Имя успешно изменено' });
+
+    } catch (error) {
+        console.error("Ошибка при смене имени:", error);
+        return res.status(500).json({ success: false, message: 'Ошибка сервера' });
+    }
+})
+
+app.post('/api/ChangeUserPassword', async (req, res) => {
+    const { JwtToken, UserId, newPassword } = req.body;
+    try {
+        const user = await User.findOne({ _id: UserId, Jwt: JwtToken }).lean();
+
+        if (!user) {
+            return res.status(403).json({ success: false, message: 'Неправильный токен или пользователь не найден' });
+        }
+
+        // Генерируем новую соль и хэшируем новый пароль
+        const CreateSalt = generateSalt();
+        const HashedPaswd = hashPassword(newPassword, CreateSalt);
+
+        // Обновляем пароль и соль пользователя
+        await User.findByIdAndUpdate(UserId, { password: HashedPaswd, salt: CreateSalt });
+        return res.status(200).json({ success: true, message: 'Пароль успешно изменён' });
+
+    } catch (error) {
+        console.error("Ошибка при смене пароля:", error);
+        return res.status(500).json({ success: false, message: 'Ошибка сервера' });
+    }
+})
 
 
 

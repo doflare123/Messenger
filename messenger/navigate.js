@@ -5,6 +5,7 @@ import LoginScreen from './app/(tabs)/Screens/LoginMenu';
 import RegisterScreen from './app/(tabs)/Screens/RegisterMenu';
 import MainScreen from './app/(tabs)/Screens/MainMenu';
 import ChatWitUser from './app/(tabs)/Screens/ChatWithUser';
+import ProfileUser from './app/(tabs)/Screens/Profile';
 import { WebSocketProvider } from './WebSoket/WSConnection';
 import CustomHeader from './app/(tabs)/SapTabs/CustomHeader'; // Импортируйте CustomHeader
 import { Ionicons } from '@expo/vector-icons';
@@ -13,12 +14,6 @@ import { Ionicons } from '@expo/vector-icons';
 const Stack = createStackNavigator();
 
 export default function Navigator() {
-
-    const handleButtonPress = () => {
-        // Ваш код для обработки нажатия на кнопку
-        console.log('Button pressed');
-    };
-
     return (
         <WebSocketProvider>
             <Stack.Navigator>
@@ -72,7 +67,7 @@ export default function Navigator() {
                             marginLeft: 10,
                         },
                         headerLeft: () => (
-                            <TouchableOpacity onPress={handleButtonPress}>
+                            <TouchableOpacity onPress={() => navigation.navigate("ProfileUser")}>
                                 <Text style={styles.but}>≡</Text>
                             </TouchableOpacity>
                         ),
@@ -101,6 +96,26 @@ export default function Navigator() {
                                 <Ionicons name="arrow-back" size={24} color="black" />
                             </TouchableOpacity>
                         ),
+                    })}
+                />
+                <Stack.Screen
+                    name="ProfileUser"
+                    component={ProfileUser}
+                    options={() =>({
+                        title:"Профиль",
+                        headerStyle:{
+                            backgroundColor:"silver"
+                        },
+                        headerTitleStyle: {
+                            fontSize: 30,
+                        },
+                        headerTitleContainerStyle:{
+                            marginTop: -13,
+                            marginLeft: -7,
+                        },
+                        headerLeftContainerStyle:{
+                            marginTop:-5
+                        }
                     })}
                 />
             </Stack.Navigator>
